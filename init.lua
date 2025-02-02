@@ -14,32 +14,30 @@ vim.opt.expandtab = true
 
 -- Enable clipboard
 vim.opt.clipboard = "unnamedplus"
+ 
+-- Install Packer (plugin manager)
+vim.cmd([[packadd packer.nvim]])
 
--- Install Lazy.nvim (plugin manager)
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    "git", "clone", "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", lazypath
-  })
-end
-vim.opt.rtp:prepend(lazypath)
+require('packer').startup(function()
+  -- Plugin manager itself
+  use 'wbthomason/packer.nvim'
 
-require("lazy").setup({
   -- Themes
-  "folke/tokyonight.nvim",
+  use 'folke/tokyonight.nvim'
 
   -- File explorer
-  "nvim-tree/nvim-tree.lua",
+  use 'nvim-tree/nvim-tree.lua'
 
   -- Status line
-  "nvim-lualine/lualine.nvim",
+  use 'nvim-lualine/lualine.nvim'
 
   -- Syntax highlighting
-  "nvim-treesitter/nvim-treesitter",
+  use 'nvim-treesitter/nvim-treesitter'
 
   -- Fuzzy finder
-  "nvim-telescope/telescope.nvim",
-})
+  use 'nvim-telescope/telescope.nvim'
 
+  -- LSP and autocompletion plugins
+  use 'neovim/nvim-lspconfig'
+  use 'hrsh7th/nvim-compe'
+end)
