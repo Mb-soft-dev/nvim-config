@@ -40,29 +40,64 @@ return {
     end,
   },
 
-  -- change some telescope options and a keymap to browse plugin files
-  {
-    "nvim-telescope/telescope.nvim",
-    keys = {
-      -- add a keymap to browse plugin files
-      -- stylua: ignore
-      {
-        "<leader>fp",
-        function() require("telescope.builtin").find_files({ cwd = require("lazy.core.config").options.root }) end,
-        desc = "Find Plugin File",
-      },
-    },
-    -- change some options
-    opts = {
-      defaults = {
-        layout_strategy = "horizontal",
-        layout_config = { prompt_position = "top" },
-        sorting_strategy = "ascending",
-        winblend = 0,
-      },
+  -- change some telescope options and a keymap to browse plugin {
+  "nvim-telescope/telescope.nvim",
+  keys = {
+    {
+      "<leader>fP",
+      function()
+        require("telescope.builtin").find_files({
+          cwd = require("lazy.core.config").options.root,
+          hidden = true,
+          no_ignore = true, -- Ignore .gitignore rules
+        })
+      end,
+      desc = "Find Plugin File",
     },
   },
+  config = function()
+    local builtin = require("telescope.builtin")
 
+    function vim.getVisualSelection()
+      vim.cmd('noau normal! "vy"')
+      local text = vim.fn.getreg("v")
+      vim.fn.setreg("v", {})
+
+      text = string.gsub(text, "\n", "")
+      return #text > 0 and text or ""
+    end
+
+    -- Keymaps
+    vim.keymap.set("n", "<leader>fP", function()
+      builtin.find_files({ hidden = true, no_ignore = true }) -- Show .env
+    end, { desc = "Find files including hidden ones" })
+
+    vim.keymap.set("n", "<C-p>", builtin.git_files, {})
+    vim.keymap.set("n", "<leader>pw", function()
+      local word = vim.fn.expand("<cword>")
+      builtin.grep_string({ search = word })
+    end)
+    vim.keymap.set("n", "<leader>pl", function()
+      builtin.grep_string({ search = "" })
+    end)
+    vim.keymap.set("n", "<leader>ps", function()
+      builtin.grep_string({ search = vim.fn.input("Grep > ") })
+    end)
+    vim.keymap.set("v", "<leader>ps", function()
+      builtin.grep_string({ search = vim.getVisualSelection() })
+    end)
+    vim.keymap.set("n", "<leader>vh", builtin.help_tags, {})
+  end,
+  opts = {
+    defaults = {
+      layout_strategy = "horizontal",
+      layout_config = { prompt_position = "top" },
+      sorting_strategy = "ascending",
+      winblend = 0,
+      file_ignore_patterns = { "%.git/", "node_modules/" },
+      find_command = { "rg", "--files", "--hidden", "--no-ignore" }, -- Make sure hidden files show up
+    },
+  },
   -- add pyright to lspconfig
   {
     "neovim/nvim-lspconfig",
